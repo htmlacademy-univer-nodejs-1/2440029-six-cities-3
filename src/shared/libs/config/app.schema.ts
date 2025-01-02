@@ -13,6 +13,7 @@ export type AppSchema = {
   STATIC_ROOT: string,
   SALT: string,
   JWT_SECRET: string,
+  DEFAULT_AVATAR: string,
 }
 
 export const configAppSchema = convict<AppSchema>({
@@ -68,6 +69,12 @@ export const configAppSchema = convict<AppSchema>({
     doc: 'Секрет для подписания токенов',
     format: String,
     env: 'JWT_SECRET',
+    default: null
+  },
+  DEFAULT_AVATAR: {
+    doc: 'Дефолтный аватар',
+    format: String,
+    env: 'DEFAULT_AVATAR',
     default: null
   },
 });

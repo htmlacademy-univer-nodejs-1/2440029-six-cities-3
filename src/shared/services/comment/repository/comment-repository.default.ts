@@ -35,6 +35,6 @@ export class DefaultCommentRepository implements CommentRepository {
   }
 
   public async findByOffer(offerId: Types.ObjectId, limit: number, offset: number): Promise<DocumentType<CommentEntity>[]> {
-    return await this.commentModel.find({offerId: {$eq: offerId}}).populate('authorId').skip(offset).limit(limit).exec();
+    return await this.commentModel.find({offerId: {$eq: offerId}}).sort({ createdAt: -1 }).populate('authorId').skip(offset).limit(limit).exec();
   }
 }

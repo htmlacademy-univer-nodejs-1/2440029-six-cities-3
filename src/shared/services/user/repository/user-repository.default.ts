@@ -57,7 +57,6 @@ export class DefaultUserRepository implements UserRepository {
   }
 
   public async updateAvatar(id: ObjectId, avatarPath: string): Promise<void> {
-    console.log(id);
     await this.userModel.findByIdAndUpdate(id, { avatarUrl: avatarPath }).exec();
   }
 }

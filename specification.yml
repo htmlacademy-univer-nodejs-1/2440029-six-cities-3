@@ -247,7 +247,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserWithoutPassword"
         '400':
           description: Bad Request
         '409':
@@ -280,6 +280,31 @@ paths:
     get:
       security:
         - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithoutPassword"
+        '401':
+          description: Unauthorized
+      tags:
+        - Users
+
+  /users/avatar:
+    post:
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: OK
@@ -339,43 +364,6 @@ components:
           format: email
         avatarUrl:
           type: string
-        type:
-          type: string
-          enum:
-            - Common
-            - Pro
-    User:
-      type: object
-      required:
-        - _id
-        - name
-        - email
-        - password
-        - type
-        - createdAt
-        - updateddAt
-      properties:
-        _id:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updateddAt:
-          type: string
-          format: date-time
-        name:
-          type: string
-          minLength: 1
-          maxLength: 15
-        email:
-          type: string
-          format: email
-        avatarUrl:
-          type: string
-        password:
-          type: string
-          minLength: 6
-          maxLength: 12
         type:
           type: string
           enum:

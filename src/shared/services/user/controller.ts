@@ -8,14 +8,13 @@ import { Logger } from '../../libs/logging/logger.interface.js';
 import { UserRepository } from './repository/user-repository.interface.js';
 import { CreateUserDto, createUserDtoSchema, LoginDto, loginDtoSchema } from './dto.js';
 import { SchemaValidatorMiddleware } from '../../libs/rest-middlewares/schema-validator.js';
-import { ObjectExistingValidatorMiddleware } from '../../libs/rest-middlewares/object-id-validator.js';
 import { UploadFileMiddleware } from '../../libs/rest-middlewares/upload-file.js';
 import { Config } from '../../libs/config/config.interface.js';
 import { AppSchema } from '../../libs/config/app.schema.js';
 import { HttpError } from '../../libs/rest-exceptions/http-error.js';
 import { StatusCodes } from 'http-status-codes';
 import { getToken } from '../../helpers/jwt.js';
-import { AuthorizeMiddleware } from '../../libs/rest-middlewares/authorize.js';
+import { AuthorizeMiddleware, AuthorizeMiddlewareMode } from '../../libs/rest-middlewares/authorize.js';
 
 
 @injectable()
@@ -34,6 +33,7 @@ export class UserController extends ControllerBase {
       httpMethod: HttpMethod.Post,
       handleAsync: this.register.bind(this),
       middlewares: [
+        new AuthorizeMiddleware(this.config.get('JWT_SECRET'), AuthorizeMiddlewareMode.Silent),
         new SchemaValidatorMiddleware(createUserDtoSchema)
       ]
     });
@@ -46,11 +46,10 @@ export class UserController extends ControllerBase {
       ]
     });
     this.addRoute({
-      path: '/:id/avatar',
+      path: '/avatar',
       httpMethod: HttpMethod.Post,
       handleAsync: this.loadAvatar.bind(this),
       middlewares: [
-        new ObjectExistingValidatorMiddleware(this.userRepository, 'id'),
         new AuthorizeMiddleware(this.config.get('JWT_SECRET')),
         new UploadFileMiddleware(this.config.get('STATIC_ROOT'), 'avatar')
       ]
@@ -67,15 +66,10 @@ export class UserController extends ControllerBase {
 
   private async loadAvatar(req: Request, res: Response): Promise<void> {
     const { userId } = res.locals;
-    const { id } = req.params;
-
-    if (userId !== id) {
-      throw new HttpError(StatusCodes.FORBIDDEN, 'No access to user');
-    }
 
     const filepath = req.file?.path;
     if (!filepath) {
-      throw new HttpError(StatusCodes.INTERNAL_SERVER_ERROR, 'Avatar not loaded');
+      throw new HttpError(StatusCodes.BAD_REQUEST, 'Avatar wasn\'t loaded');
     }
 
     await this.userRepository.updateAvatar(userId, filepath);
@@ -83,6 +77,11 @@ export class UserController extends ControllerBase {
   }
 
   private async register(req: Request, res: Response): Promise<void> {
+    const { userId } = res.locals;
+    if (userId) {
+      throw new HttpError(StatusCodes.FORBIDDEN, 'Only anonymous clients can create new users');
+    }
+
     const dto = plainToInstance(CreateUserDto, req.body as object);
 
     const existedUser = await this.userRepository.findByEmail(dto.email);
@@ -92,13 +91,16 @@ export class UserController extends ControllerBase {
       throw new HttpError(StatusCodes.CONFLICT, error);
     }
 
-    const avatarPath = req.file?.path;
-    if (avatarPath) {
-      dto.avatarUrl = avatarPath;
+    if (!dto.avatarUrl) {
+      dto.avatarUrl = this.config.get('DEFAULT_AVATAR');
     }
 
     const user = await this.userRepository.create(dto, this.config.get('SALT'));
-    this.created(res, user);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...restData} = user.toObject();
+
+    this.ok(res, restData);
   }
 
   private async login(req: Request, res: Response): Promise<void> {

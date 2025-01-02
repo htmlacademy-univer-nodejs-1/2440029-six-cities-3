@@ -26,10 +26,9 @@ export class OfferDto extends CreateOrUpdateOfferDto {
 export const createOrUpdateOfferDtoSchema = Joi.object({
   name: Joi.string().min(10).max(100).required(),
   description: Joi.string().min(20).max(1024).required(),
-  createdAt: Joi.date().required(),
   city: Joi.string().valid(...Object.values(CityType)).required(),
   previewUrl: Joi.string().uri().required(),
-  imagesUrls: Joi.array().items(Joi.string().uri()).required(),
+  imagesUrls: Joi.array().items(Joi.string().uri()).min(6).max(6).required(),
   isPremium: Joi.boolean().required(),
   accommodationType: Joi.string().valid(...Object.values(AccommodationType)).required(),
   roomCount: Joi.number().min(1).max(8).required(),

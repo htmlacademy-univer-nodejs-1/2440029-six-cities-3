@@ -28,7 +28,7 @@ export class OfferTsvParser {
         email: authorEmail,
         name: author,
         type: UserType.Common,
-        avatarUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/01/Jones_and_Ellen_Ripley.webp/258px-Jones_and_Ellen_Ripley.webp.png',
+        avatarUrl: `http://8.8.8.8:232/${author}`,
         password: authorPassword,
       },
       latitude: Number(latitude),

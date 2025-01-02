@@ -9,8 +9,8 @@
   ],
   "main": "main.js",
   "scripts": {
-    "start": "npm run build && node ./dist/main.cli.js",
-    "start:dev": "npm run build && node ./dist/main.rest.js | pino-pretty --colorize --translateTime",
+    "start:cli": "npm run build && node ./dist/main.cli.js",
+    "start:rest": "npm run build && node ./dist/main.rest.js | pino-pretty --colorize --translateTime",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts --fix",
     "compile": "tsc -p tsconfig.json",

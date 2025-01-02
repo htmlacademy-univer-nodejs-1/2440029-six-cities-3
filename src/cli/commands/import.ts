@@ -13,6 +13,7 @@ import { DefaultUserRepository } from '../../shared/services/user/repository/use
 import { UserModel } from '../../shared/services/user/enteties.js';
 import { UserRepository } from '../../shared/services/user/repository/user-repository.interface.js';
 import { Command } from './command.interface.js';
+import { CommentModel } from '../../shared/services/comment/enteties.js';
 
 
 export class ImportCommand implements Command {
@@ -26,7 +27,7 @@ export class ImportCommand implements Command {
     this.onImportedLine = this.onImportedLine.bind(this);
     this.onCompleteImport = this.onCompleteImport.bind(this);
     this.logger = new ConsoleLogger();
-    this.offerRepository = new DefaultOfferRepository(this.logger, OfferModel);
+    this.offerRepository = new DefaultOfferRepository(this.logger, OfferModel, CommentModel);
     this.userRepository = new DefaultUserRepository(this.logger, UserModel);
     this.dbClient = new MongoDatabaseClient(this.logger);
   }

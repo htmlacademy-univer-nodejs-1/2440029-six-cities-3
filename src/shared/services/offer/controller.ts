@@ -104,7 +104,7 @@ export class OfferController extends ControllerBase {
   }
 
   private async index(req: Request, res: Response): Promise<void> {
-    const { limit, skip } = req.query;
+    const { limit, offset } = req.query;
 
     const defaultLimit = 20;
     const limitValue = limit ? parseInt(limit as string, 10) : defaultLimit;
@@ -113,11 +113,11 @@ export class OfferController extends ControllerBase {
       this.sendBadRequest('limit', limit);
     }
 
-    const defaultSkip = 0;
-    const skipValue = skip ? parseInt(skip as string, 10) : defaultSkip;
+    const defaultOffset = 0;
+    const skipValue = offset ? parseInt(offset as string, 10) : defaultOffset;
 
     if (isNaN(skipValue)) {
-      this.sendBadRequest('skip', skip);
+      this.sendBadRequest('skip', offset);
     }
 
     const offers = await this.offerRepository.findAll(limitValue, skipValue);
@@ -192,7 +192,15 @@ export class OfferController extends ControllerBase {
       this.sendBadRequest('city', city);
     }
 
-    const { limit, skip: offset } = req.query;
+    const offsetValue = 0;
+    const limitValue = 3;
+
+    const offers = await this.offerRepository.findAllPremium(cityValue, limitValue, offsetValue);
+    this.ok(res, offers);
+  }
+
+  private async indexFavouriteForUser(req: Request, res: Response): Promise<void> {
+    const { limit, offset } = req.query;
 
     const defaultLimit = 20;
     const limitValue = limit ? parseInt(limit as string, 10) : defaultLimit;
@@ -202,31 +210,10 @@ export class OfferController extends ControllerBase {
     }
 
     const defaultOffset = 0;
-    const offsetValue = offset ? parseInt(offset as string, 10) : defaultOffset;
-
-    if (isNaN(offsetValue)) {
-      this.sendBadRequest('skip', offset);
-    }
-
-    const offers = await this.offerRepository.findAllPremium(cityValue, limitValue, offsetValue);
-    this.ok(res, offers);
-  }
-
-  private async indexFavouriteForUser(req: Request, res: Response): Promise<void> {
-    const { limit, skip } = req.query;
-
-    const defaultLimit = 20;
-    const limitValue = limit ? parseInt(limit as string, 10) : defaultLimit;
-
-    if (isNaN(limitValue)) {
-      this.sendBadRequest('limit', limit);
-    }
-
-    const defaultSkip = 0;
-    const skipValue = skip ? parseInt(skip as string, 10) : defaultSkip;
+    const skipValue = offset ? parseInt(offset as string, 10) : defaultOffset;
 
     if (isNaN(skipValue)) {
-      this.sendBadRequest('skip', skip);
+      this.sendBadRequest('skip', offset);
     }
 
     const { userId } = res.locals;

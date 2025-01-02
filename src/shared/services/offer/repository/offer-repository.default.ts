@@ -8,12 +8,14 @@ import { OfferEntity } from '../enteties.js';
 import { Logger } from '../../../libs/logging/logger.interface.js';
 import { OfferDto, CreateOrUpdateOfferDto } from '../dto.js';
 import { CityType } from '../../../models/rent-offer.js';
+import { CommentEntity } from '../../comment/enteties.js';
 
 @injectable()
 export class DefaultOfferRepository implements OfferRepository {
   constructor(
     @inject(DIName.Logger) private readonly logger: Logger,
-    @inject(DIName.OfferModel) private readonly offerModel: types.ModelType<OfferEntity>
+    @inject(DIName.OfferModel) private readonly offerModel: types.ModelType<OfferEntity>,
+    @inject(DIName.CommentModel) private readonly commentModel: types.ModelType<CommentEntity>
   ) {}
 
   public async doesIdExist(id: Types.ObjectId): Promise<boolean> {
@@ -40,11 +42,12 @@ export class DefaultOfferRepository implements OfferRepository {
 
   public async deleteById(id: Types.ObjectId): Promise<void> {
     await this.offerModel.findByIdAndDelete(id).exec();
+    await this.commentModel.deleteMany({ offerId: id }).exec();
     this.logger.info(`Offer deleted: ${id}`);
   }
 
   public async findAll(limit: number, offset: number): Promise<DocumentType<OfferEntity>[]> {
-    return this.offerModel.find().skip(offset).limit(limit).exec();
+    return this.offerModel.find().sort({ createdAt: -1 }).skip(offset).limit(limit).exec();
   }
 
   public async findAllPremium(city: CityType, limit: number, offset: number): Promise<DocumentType<OfferEntity>[]> {
@@ -52,7 +55,7 @@ export class DefaultOfferRepository implements OfferRepository {
   }
 
   public async findAllFavourite(userId: Types.ObjectId, limit: number, offset: number): Promise<DocumentType<OfferEntity>[]> {
-    return this.offerModel.find({favouriteUsers: {'$in': [userId]}}).skip(offset).limit(limit).exec();
+    return this.offerModel.find({favouriteUsers: {'$in': [userId]}}).sort({ createdAt: -1 }).skip(offset).limit(limit).exec();
   }
 
   public async addToFavourite(orderId: Types.ObjectId, userId: Types.ObjectId): Promise<void> {
